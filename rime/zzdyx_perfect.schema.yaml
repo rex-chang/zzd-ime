@@ -1,0 +1,114 @@
+# Rime schema
+# encoding:utf-8
+
+schema:
+  schema_id: zzdyx_perfect
+  name: 哲豆音形
+  version: "20061101～20170407"
+  author:
+    - 哲哲豆<syhgzzhh@163.com>
+  description: |
+    哲哲豆音形码快版
+  dependencies:
+    - pinyin_simp
+
+switches:
+  - name: ascii_mode
+    reset: 0
+    states: [ 中文, 西文 ]
+  - name: full_shape
+    reset: 0
+    states: [ 半角, 全角 ]
+  - name: ascii_punct
+    reset: 0
+    states: [ ，。, ，． ]
+  - name: zh_trad
+    states: [简体, 繁体]
+
+engine:
+  processors:
+    - ascii_composer
+    - recognizer
+    - key_binder
+    - speller
+    - punctuator
+    - selector
+    - navigator
+    - express_editor
+  segmentors:
+    - ascii_segmentor
+    - matcher
+    - abc_segmentor
+    - punct_segmentor
+    - fallback_segmentor
+  translators:
+    - punct_translator
+    - table_translator@custom_phrase
+    - table_translator
+    - reverse_lookup_translator
+    - reverse_lookup_translator@pinyin
+  filters:
+    - simplifier@zh_trad
+    - uniquifier
+
+speller:
+  alphabet: zyxwvutsrqponmlkjihgfedcba
+  auto_select: true
+
+translator:
+  dictionary: zzdyx_perfect
+  enable_sentence: false
+  enable_user_dict: true
+  disable_user_dict_for_patterns:
+    - "^.*$"
+
+custom_phrase:
+  dictionary: ""
+  user_dict: custom_phrase
+  db_class: stabledb
+  enable_completion: false
+  enable_sentence: false
+  initial_quality: 1
+
+zh_trad:
+  opencc_config: s2t.json #适用于新版rime（比如同文，Pime）
+#  opencc_config: zhs2zht.ini #适用于旧版小狼毫，与上句二选一
+  option_name: zh_trad
+  tags: [abc]
+  tips: all    #none|char|all
+
+reverse_lookup:
+  dictionary: stroke
+  enable_completion: true
+  prefix: "``"
+  suffix: "'"
+  tips: "笔画查字"
+
+pinyin:
+  dictionary: pinyin_simp
+  tag: pinyin
+  prefix: "`"
+  suffix: "'"
+  tips: "拼音查字"
+
+punctuator:
+  import_preset: default
+  half_shape:
+    "/": {commit: "、"}
+
+key_binder:
+  import_preset: default
+  bindings:
+    - {accept: semicolon, send: 2, when: has_menu} #分號選第二重碼
+    - {accept: apostrophe, send: 3, when: has_menu} #引號選第三重碼
+    - {accept: "Control+1", select: .next, when: always}
+    - {accept: "Control+2", toggle: full_shape, when: always}
+    - {accept: "Control+3", toggle: simplification, when: always}
+    - {accept: "Control+4", toggle: extended_charset, when: always}
+
+recognizer:
+  import_preset: default
+  patterns:
+    reverse_lookup: "^``[a-z]*'?$"
+    pinyin: "^`[a-z]*'?$"
+    xxx: "^[^v].[a-z]$"
